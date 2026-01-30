@@ -1,0 +1,72 @@
+
+CREATE DATABASE corrections_db;
+
+USE corrections_db;
+
+CREATE TABLE scopes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE corrections (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  subject_value TEXT NOT NULL,
+  status INT DEFAULT 0,
+  scope_id INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE hypotheses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  correction_id INT NOT NULL,
+  value TEXT NOT NULL,
+  score FLOAT DEFAULT 0,
+  approved BOOLEAN DEFAULT FALSE,
+  suggested_by_reviewer BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (correction_id) REFERENCES corrections(id) ON DELETE CASCADE
+);
+
+CREATE TABLE context_elements (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  correction_id INT NOT NULL,
+  element_key VARCHAR(100) NOT NULL,
+  element_value TEXT NOT NULL,
+  important BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (correction_id) REFERENCES corrections(id) ON DELETE CASCADE
+);
+
+INSERT INTO scopes (name, description) VALUES 
+('Глобальная область', 'Корректировки для всех данных'),
+('Расписание ВУЗа', 'Корректировки расписания'),
+('Студенты', 'Корректировки данных студентов');
+
+INSERT INTO corrections (subject_value, status, scope_id) VALUES 
+('ПОНЕДЕЛЬНИК', 0, 2),
+('ВТОРНИК', 1, 2),
+('СРЕДА', 2, 2),
+('ЧЕТВЕРГ', 0, 2),
+('ПЯТНИЦА', 1, 2),
+('СУББОТА', 0, 2),
+('ИВТ-360', 0, 2),
+('ПРИН-366', 1, 2),
+('Ф-369', 2, 2);
+
+INSERT INTO hypotheses (correction_id, value, score, approved, suggested_by_reviewer) VALUES
+(1, 'Понедельник', 0.9, FALSE, FALSE),
+(1, 'Monday', 0.7, FALSE, FALSE),
+(2, 'Вторник', 1.0, TRUE, FALSE),
+(3, 'Среда', 0.8, FALSE, TRUE),
+(7, 'ИВТ-360 (Информатика)', 0.95, FALSE, FALSE),
+(8, 'ПРИН-366 (Программирование)', 1.0, TRUE, FALSE);
+
+INSERT INTO context_elements (correction_id, element_key, element_value, important) VALUES
+(1, 'Тип', 'День недели', TRUE),
+(1, 'Язык', 'Русский', FALSE),
+(7, 'Тип', 'Группа', TRUE),
+(7, 'Факультет', 'ФЭВТ', TRUE),
+(7, 'Курс', '3', FALSE);
